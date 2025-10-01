@@ -10,3 +10,4 @@ Inputvalidering (titel/text kan inte vara tomma, datumformat kontrolleras)
 REFLEKTION
 Jag valde att lagra anteckningar i en List, eftersom den är enkel och flexibel att arbeta med.
 För filhantering används JSON via System.Text.Json, vilket gör sparad data både lättläst och lätt att deserialisera.
+Lade till input-validering, dokumentation, release v1.0.0. i README
