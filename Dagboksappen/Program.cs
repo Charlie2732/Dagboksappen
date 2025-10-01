@@ -1,12 +1,17 @@
-﻿using System;
+﻿using Dagboksappen;
 using Dagboksappen.Services;
-using Dagboksappen;
+using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 
 namespace Dagboksappen
 {
     internal class Program
     {
         private static DagboksRepository repo = new DagboksRepository();
+        private static readonly string SavePath = Path.Combine(AppContext.BaseDirectory, "dagbok.json");
 
         static void Main(string[] args)
         {
@@ -86,9 +91,6 @@ namespace Dagboksappen
         }
 
 
-
-
-
         private static void ListaAnteckningar()
         {
             Console.Clear();
@@ -115,12 +117,6 @@ namespace Dagboksappen
             Console.ReadKey();
         }
 
-
-
-
-
-
-
         private static void LäggTillAnteckning()
         {
             Console.Clear();
@@ -130,9 +126,21 @@ namespace Dagboksappen
 
             Console.Write("Titel: ");
             string titel = Console.ReadLine() ?? "";
+            if (string.IsNullOrWhiteSpace(titel))
+            {
+                Console.WriteLine("Titel får inte vara tom.");
+                Console.ReadKey();
+                return;
+            }
 
             Console.Write("Text: ");
             string text = Console.ReadLine() ?? "";
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                Console.WriteLine("Text får inte vara tom.");
+                Console.ReadKey();
+                return;
+            }
 
             repo.LäggTill(new DagboksPost(DateTime.Now, titel, text));
 
@@ -140,16 +148,71 @@ namespace Dagboksappen
             Console.ReadKey();
         }
 
+        private static void SparaTillFil()
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("=== Spara till fil (JSON) ===");
+            Console.ResetColor();
 
+            try
+            {
+                var data = repo.HämtaAlla();
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                var json = JsonSerializer.Serialize(data, options);
 
+                File.WriteAllText(SavePath, json);
 
-        
-        
-        private static void SparaTillFil() => Console.WriteLine("SparaTillFil");
-        private static void LäsFrånFil() => Console.WriteLine("LäsFrånFil");
+                Console.WriteLine($"Sparat {data.Count} anteckning(ar) till:\n{SavePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Kunde inte spara filen.");
+                Console.WriteLine(ex.Message);
+            }
 
+            Console.WriteLine("\nTryck valfri tangent för att återgå till menyn.");
+            Console.ReadKey();
+        }
 
+        private static void LäsFrånFil()
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("=== Läs från fil (JSON) ===");
+            Console.ResetColor();
 
+            if (!File.Exists(SavePath))
+            {
+                Console.WriteLine("Ingen fil hittades att läsa från:");
+                Console.WriteLine(SavePath);
+                Console.WriteLine("\nTryck valfri tangent för att återgå till menyn.");
+                Console.ReadKey();
+                return;
+            }
+
+            try
+            {
+                var json = File.ReadAllText(SavePath);
+                var lista = JsonSerializer.Deserialize<List<DagboksPost>>(json)
+                            ?? new List<DagboksPost>();
+
+                
+                repo = new DagboksRepository();
+                foreach (var p in lista)
+                    repo.LäggTill(p);
+
+                Console.WriteLine($"Läste in {lista.Count} anteckning(ar) från fil.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Kunde inte läsa från filen.");
+                Console.WriteLine(ex.Message);
+            }
+
+            Console.WriteLine("\nTryck valfri tangent för att återgå till menyn.");
+            Console.ReadKey();
+        }
 
         private static void VisaMeny()
         {
