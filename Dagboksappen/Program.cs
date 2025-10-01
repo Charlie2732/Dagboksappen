@@ -43,6 +43,47 @@ namespace Dagboksappen
 
         }
 
+        private static void SökAnteckning()
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("=== Sök anteckning på datum ===");
+            Console.ResetColor();
+
+            Console.Write("Ange datum (yyyy-MM-dd): ");
+            string input = Console.ReadLine() ?? "";
+
+            if (DateTime.TryParseExact(input, "yyyy-MM-dd",
+                System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None,
+                out DateTime sökDatum))
+            {
+                var träffar = repo.HämtaAlla()
+                                  .Where(p => p.Datum.Date == sökDatum.Date)
+                                  .ToList();
+
+                if (träffar.Count == 0)
+                {
+                    Console.WriteLine("Inga anteckningar hittades för det datumet.");
+                }
+                else
+                {
+                    foreach (var post in träffar)
+                    {
+                        Console.WriteLine($"{post.Datum:yyyy-MM-dd HH:mm} - {post.Titel}");
+                        Console.WriteLine(post.Text);
+                        Console.WriteLine(new string('-', 40));
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Felaktigt datumformat. Använd yyyy-MM-dd (t.ex. 2025-10-01).");
+            }
+
+            Console.WriteLine("\nTryck valfri tangent för att återgå till menyn.");
+            Console.ReadKey();
+        }
 
 
 
@@ -103,7 +144,7 @@ namespace Dagboksappen
 
 
         
-        private static void SökAnteckning() => Console.WriteLine("SökAnteckning");
+        
         private static void SparaTillFil() => Console.WriteLine("SparaTillFil");
         private static void LäsFrånFil() => Console.WriteLine("LäsFrånFil");
 
