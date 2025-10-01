@@ -1,0 +1,7 @@
+﻿bin/
+obj/
+.vscode/
+*.user
+*.suo
+*.swp
+*.DS_Store
