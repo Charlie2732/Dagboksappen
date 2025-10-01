@@ -1,13 +1,26 @@
-﻿namespace Dagboksappen
+﻿using System;
+using Dagboksappen.Services;
+using Dagboksappen;
+
+namespace Dagboksappen
 {
     internal class Program
     {
+        private static DagboksRepository repo = new DagboksRepository();
+
         static void Main(string[] args)
         {
+            
             while (true)
             {
                 VisaMeny();
-                int val = int.Parse(Console.ReadLine());
+                var input = Console.ReadLine();
+                if (!int.TryParse(input, out int val))
+                {
+                    Console.WriteLine("Ogiltig inmatning. Tryck valfri tangent för att återgå till menyn");
+                    Console.ReadKey();
+                    continue;
+                }
                 switch (val)
                 {
                     case 1: LäggTillAnteckning(); break;
@@ -18,6 +31,10 @@
                     case 0: return;
                     default: Console.WriteLine("Ogiltigt val."); break;
                 }
+                
+
+                
+                
 
             }
 
@@ -31,6 +48,31 @@
 
 
 
+        private static void ListaAnteckningar()
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("=== Alla anteckningar ===");
+            Console.ResetColor();
+
+            var alla = repo.HämtaAlla();
+            if (alla.Count == 0)
+            {
+                Console.WriteLine("(Inga anteckningar ännu.)");
+            }
+            else
+            {
+                foreach (var post in alla)
+                {
+                    Console.WriteLine($"{post.Datum:yyyy-MM-dd HH:mm} - {post.Titel}");
+                    Console.WriteLine(post.Text);
+                    Console.WriteLine(new string('-', 40));
+                }
+            }
+
+            Console.WriteLine("\nTryck valfri tangent för att återgå till menyn.");
+            Console.ReadKey();
+        }
 
 
 
@@ -38,15 +80,29 @@
 
 
 
+        private static void LäggTillAnteckning()
+        {
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("=== Ny anteckning ===");
+            Console.ResetColor();
+
+            Console.Write("Titel: ");
+            string titel = Console.ReadLine() ?? "";
+
+            Console.Write("Text: ");
+            string text = Console.ReadLine() ?? "";
+
+            repo.LäggTill(new DagboksPost(DateTime.Now, titel, text));
+
+            Console.WriteLine("\nSparat! Tryck valfri tangent för att återgå till menyn.");
+            Console.ReadKey();
+        }
 
 
 
 
-
-
-
-        private static void LäggTillAnteckning() => Console.WriteLine(" LäggTillAnteckning");
-        private static void ListaAnteckningar() => Console.WriteLine("ListaAnteckningar");
+        
         private static void SökAnteckning() => Console.WriteLine("SökAnteckning");
         private static void SparaTillFil() => Console.WriteLine("SparaTillFil");
         private static void LäsFrånFil() => Console.WriteLine("LäsFrånFil");
